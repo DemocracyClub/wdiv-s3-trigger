@@ -1,0 +1,49 @@
+service: wdiv-s3-trigger
+provider:
+  name: aws
+  runtime: python3.6
+  region: eu-west-1
+
+  # these limits should be sufficient
+  # but we can crank them up if we need to
+  memorySize: 1024
+  timeout: 6
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:GetObject"
+      Resource:
+        - "arn:aws:s3:::${file(./settings.${opt:stage}.json):BUCKET_NAME}/*"
+    - Effect: "Allow"
+      Action:
+        - "s3:PutObject"
+      Resource:
+        - "arn:aws:s3:::${file(./settings.${opt:stage}.json):BUCKET_NAME}/*"
+
+  environment:
+    SENTRY_DSN: ${file(./settings.${opt:stage}.json):SENTRY_DSN}
+    GITHUB_REPO: ${file(./settings.${opt:stage}.json):GITHUB_REPO}
+    GITHUB_API_KEY: ${file(./settings.${opt:stage}.json):GITHUB_API_KEY}
+    WDIV_API_KEY: ${file(./settings.${opt:stage}.json):WDIV_API_KEY}
+
+package:
+  include:
+    - handler.py
+    - csv_helpers.py
+    - github_helpers.py
+  exclude:
+    - '*'
+functions:
+  lambda_handler:
+    handler: handler.lambda_handler
+    events:
+      - s3:
+          bucket: ${file(./settings.${opt:stage}.json):BUCKET_NAME}
+          event: s3:ObjectCreated:*
+          existing: true
+custom:
+  pythonRequirements:
+    usePipenv: true
+plugins:
+  - serverless-python-requirements

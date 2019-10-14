@@ -1,0 +1,4 @@
+node_modules/
+.serverless/
+settings.dev.json
+settings.prod.json
