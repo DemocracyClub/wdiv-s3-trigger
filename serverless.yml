@@ -30,8 +30,7 @@ provider:
 package:
   include:
     - handler.py
-    - csv_helpers.py
-    - github_helpers.py
+    - trigger/*
   exclude:
     - '*'
 functions:
