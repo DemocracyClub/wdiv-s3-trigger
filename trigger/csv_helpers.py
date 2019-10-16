@@ -46,6 +46,10 @@ def get_csv_report(response):
     }
 
     body = response['Body'].read()
+    if len(body) == 0:
+        report['errors'].append('File is empty')
+        return report
+
     try:
         decoded = attempt_decode(body)
     except UnicodeDecodeError:
@@ -82,3 +86,13 @@ def get_csv_report(response):
     except csv.Error:
         report['errors'].append('Failed to parse body')
         return report
+
+
+def get_object_report(response):
+    if response['ContentLength'] < 1024:
+        return {'errors': ['Expected file to be at least 1KB']}
+    if response['ContentLength'] > 150000000:
+        return {'errors': ['Expected file to be under 150MB']}
+    if response['ContentType'] not in ('text/tab-separated-values', 'text/csv'):
+        return {'errors': [f"Unexpected file type {response['ContentType']}"]}
+    return {'errors': []}

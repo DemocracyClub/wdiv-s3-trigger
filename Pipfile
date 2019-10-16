@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 boto3 = "*"
+responses = "==0.10.6"
 
 [packages]
 requests = ">=2.22.0"
