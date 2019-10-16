@@ -1,18 +1,6 @@
 import requests
 from requests.exceptions import HTTPError
-
-
-def gss_to_council(gss):
-    r = requests.get(f'https://wheredoivote.co.uk/api/beta/councils/{gss}.json')
-    try:
-        r.raise_for_status()
-        council = r.json()
-        return council['name']
-    except (HTTPError, KeyError):
-        # if we can't get the name,
-        # raising the issue with only a GSS code
-        # isn't the end of the world
-        return gss
+from .wdiv_helpers import gss_to_council
 
 
 class GitHubIssue:
