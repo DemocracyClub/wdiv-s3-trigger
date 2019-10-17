@@ -7,18 +7,22 @@ from .github_helpers import raise_github_issue
 from .wdiv_helpers import submit_report
 
 
-s3 = boto3.client('s3')
-CONSTANTS = {
-    'SENTRY_DSN': os.getenv('SENTRY_DSN', ''),
-    'GITHUB_REPO': os.getenv('GITHUB_REPO', ''),
-    'GITHUB_API_KEY': os.getenv('GITHUB_API_KEY', ''),
-    'WDIV_API_KEY': os.getenv('WDIV_API_KEY', ''),
-}
-if CONSTANTS['SENTRY_DSN']:
-    sentry_sdk.init(CONSTANTS['SENTRY_DSN'])
+def register_env():
+    SENTRY_DSN = os.getenv('SENTRY_DSN', '')
+    if SENTRY_DSN:
+        sentry_sdk.init(SENTRY_DSN)
+    return {
+        'SENTRY_DSN': SENTRY_DSN,
+        'GITHUB_REPO': os.getenv('GITHUB_REPO', ''),
+        'GITHUB_API_KEY': os.getenv('GITHUB_API_KEY', ''),
+        'WDIV_API_KEY': os.getenv('WDIV_API_KEY', ''),
+    }
 
 
 def main(event, context):
+    CONSTANTS = register_env()
+
+    s3 = boto3.client('s3')
     bucket = event['Records'][0]['s3']['bucket']['name']
     key = urllib.parse.unquote_plus(
         event['Records'][0]['s3']['object']['key'], encoding='utf-8'

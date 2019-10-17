@@ -17,7 +17,7 @@ def gss_to_council(gss):
 def submit_report(wdiv_api_key, report):
     wdiv_url = 'https://wheredoivote.co.uk/api/doesnt/exist/yet'  # TODO
     if wdiv_api_key:
-        r = requests.post(self.url,
+        r = requests.post(wdiv_url,
             json=report,
             headers={'Authorization': f'Token {wdiv_api_key}'}
         )
