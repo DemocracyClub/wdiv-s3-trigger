@@ -1,0 +1,16 @@
+dist: xenial
+language: python
+python:
+  - '3.6'
+  - '3.7'
+before_install:
+  - pip install --upgrade pipenv
+install:
+  - pipenv install --dev
+script:
+  - coverage run --source=trigger ./run_tests.py
+  - isort **/*.py -c --diff
+  - flake8 .
+  - black --check .
+after_success:
+  - coveralls
