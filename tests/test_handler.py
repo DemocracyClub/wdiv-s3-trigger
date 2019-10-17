@@ -3,13 +3,15 @@ import json
 import os
 import sys
 from unittest import TestCase
+
 import boto3
 import responses
 from moto import mock_s3
+
 from trigger.handler import main
 
-
-trigger_payload = json.loads('''{
+trigger_payload = json.loads(
+    """{
   "Records": [
     {
       "eventVersion": "2.0",
@@ -46,7 +48,8 @@ trigger_payload = json.loads('''{
       }
     }
   ]
-}''')
+}"""
+)
 
 
 class HandlerTests(TestCase):
@@ -63,44 +66,44 @@ class HandlerTests(TestCase):
 
     def setUp(self):
         # ensure we definitely don't have any real credentials set for AWS
-        os.environ['AWS_ACCESS_KEY_ID'] = 'testing'
-        os.environ['AWS_SECRET_ACCESS_KEY'] = 'testing'
-        os.environ['AWS_SECURITY_TOKEN'] = 'testing'
-        os.environ['AWS_SESSION_TOKEN'] = 'testing'
+        os.environ["AWS_ACCESS_KEY_ID"] = "testing"
+        os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+        os.environ["AWS_SECURITY_TOKEN"] = "testing"
+        os.environ["AWS_SESSION_TOKEN"] = "testing"
 
         # don't send errors to senty under test
-        os.environ['SENTRY_DSN'] = ''
+        os.environ["SENTRY_DSN"] = ""
 
         # set fake credentials for services
         # we're going to have mocked interactions with
-        self.repo = 'chris48s/does-not-exist'
-        os.environ['GITHUB_REPO'] = self.repo
-        os.environ['GITHUB_API_KEY'] = 'testing'
-        os.environ['WDIV_API_KEY'] = 'testing'
+        self.repo = "chris48s/does-not-exist"
+        os.environ["GITHUB_REPO"] = self.repo
+        os.environ["GITHUB_API_KEY"] = "testing"
+        os.environ["WDIV_API_KEY"] = "testing"
 
         # set up pretend s3 bucket
         self.s3mock = mock_s3()
         self.s3mock.start()
-        self.conn = boto3.client('s3')
-        self.conn.create_bucket(Bucket='fakebucket')
+        self.conn = boto3.client("s3")
+        self.conn.create_bucket(Bucket="fakebucket")
 
         # mock all the HTTP responses we're going to make
         responses.start()
         responses.add(
             responses.GET,
-            f'https://wheredoivote.co.uk/api/beta/councils/X01000000.json',
+            f"https://wheredoivote.co.uk/api/beta/councils/X01000000.json",
             status=200,
-            body=json.dumps({'name': 'Piddleton Parish Council'}),
+            body=json.dumps({"name": "Piddleton Parish Council"}),
         )
         responses.add(
             responses.POST,
-            f'https://api.github.com/repos/{self.repo}/issues',
-            json={'url': f'https://github.com/{self.repo}/issues/1'},
+            f"https://api.github.com/repos/{self.repo}/issues",
+            json={"url": f"https://github.com/{self.repo}/issues/1"},
             status=200,
         )
         responses.add(
             responses.POST,
-            'https://wheredoivote.co.uk/api/doesnt/exist/yet',
+            "https://wheredoivote.co.uk/api/doesnt/exist/yet",
             json={},
             status=200,
         )
@@ -120,62 +123,56 @@ class HandlerTests(TestCase):
             if filename.endswith((".tsv", ".TSV"))
             else "text/csv"
         )
-        fixture = open(f'tests/fixtures/{filename}', 'rb').read()
+        fixture = open(f"tests/fixtures/{filename}", "rb").read()
         self.conn.put_object(
-            Bucket='fakebucket',
-            Key='X01000000/2019-09-30T17:00:02.396833/data',
+            Bucket="fakebucket",
+            Key="X01000000/2019-09-30T17:00:02.396833/data",
             Body=fixture,
-            ContentType=guess_content_type(filename)
+            ContentType=guess_content_type(filename),
         )
 
     def test_valid(self):
-        self.load_fixture('ems-idox-eros.csv')
+        self.load_fixture("ems-idox-eros.csv")
 
         main(trigger_payload, None)
 
         self.assertEqual(3, len(responses.calls))
         self.assertEqual(
-            f'https://api.github.com/repos/{self.repo}/issues',
-            responses.calls[1].request.url
+            f"https://api.github.com/repos/{self.repo}/issues",
+            responses.calls[1].request.url,
         )
         self.assertEqual(
-            'https://wheredoivote.co.uk/api/doesnt/exist/yet',
-            responses.calls[2].request.url
+            "https://wheredoivote.co.uk/api/doesnt/exist/yet",
+            responses.calls[2].request.url,
         )
         expected_dict = {
-            'csv_valid': True,
-            'csv_rows': 10,
-            'ems': 'Idox Eros (Halarose)',
-            'errors': [],
-            'gh_issue': f'https://github.com/{self.repo}/issues/1',
-            'gss': 'X01000000',
-            'timestamp': '2019-09-30T17:00:02.396833'
+            "csv_valid": True,
+            "csv_rows": 10,
+            "ems": "Idox Eros (Halarose)",
+            "errors": [],
+            "gh_issue": f"https://github.com/{self.repo}/issues/1",
+            "gss": "X01000000",
+            "timestamp": "2019-09-30T17:00:02.396833",
         }
-        self.assertDictEqual(
-            expected_dict,
-            json.loads(responses.calls[2].request.body)
-        )
+        self.assertDictEqual(expected_dict, json.loads(responses.calls[2].request.body))
 
     def test_invalid(self):
-        self.load_fixture('incomplete-file.CSV')
+        self.load_fixture("incomplete-file.CSV")
 
         main(trigger_payload, None)
 
         self.assertEqual(1, len(responses.calls))
         self.assertEqual(
-            'https://wheredoivote.co.uk/api/doesnt/exist/yet',
-            responses.calls[0].request.url
+            "https://wheredoivote.co.uk/api/doesnt/exist/yet",
+            responses.calls[0].request.url,
         )
         expected_dict = {
-            'csv_valid': False,
-            'csv_rows': 10,
-            'ems': 'Xpress DC',
-            'errors': ['Incomplete file: Expected 38 columns on row 10 found 7'],
-            'gh_issue': None,
-            'gss': 'X01000000',
-            'timestamp': '2019-09-30T17:00:02.396833'
+            "csv_valid": False,
+            "csv_rows": 10,
+            "ems": "Xpress DC",
+            "errors": ["Incomplete file: Expected 38 columns on row 10 found 7"],
+            "gh_issue": None,
+            "gss": "X01000000",
+            "timestamp": "2019-09-30T17:00:02.396833",
         }
-        self.assertDictEqual(
-            expected_dict,
-            json.loads(responses.calls[0].request.body)
-        )
+        self.assertDictEqual(expected_dict, json.loads(responses.calls[0].request.body))
