@@ -1,3 +1,4 @@
+import json
 import os
 import urllib.parse
 
@@ -18,6 +19,7 @@ def register_env():
         "GITHUB_REPO": os.getenv("GITHUB_REPO", ""),
         "GITHUB_API_KEY": os.getenv("GITHUB_API_KEY", ""),
         "WDIV_API_KEY": os.getenv("WDIV_API_KEY", ""),
+        "FINAL_BUCKET_NAME": os.getenv("FINAL_BUCKET_NAME", ""),
     }
 
 
@@ -58,12 +60,18 @@ def main(event, context):
         report = {**report, **get_csv_report(response)}
 
     if report["csv_valid"]:
-        # TODO: copy the file from temp bucket to real bucket
-
+        s3.copy({"Bucket": bucket, "Key": key}, CONSTANTS["FINAL_BUCKET_NAME"], key)
         issue = raise_github_issue(
             CONSTANTS["GITHUB_API_KEY"], CONSTANTS["GITHUB_REPO"], report
         )
         report["gh_issue"] = issue
+        report_path = "/".join(path[:-1]) + "/report.json"
+        s3.put_object(
+            Bucket=CONSTANTS["FINAL_BUCKET_NAME"],
+            Key=report_path,
+            Body=json.dumps(report, indent=2),
+            ContentType="application/json",
+        )
     else:
         # TODO: email pollingstations@democracyclub.org.uk
         print("oh noes! :(")

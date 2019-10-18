@@ -6,6 +6,7 @@ from unittest import TestCase
 
 import boto3
 import responses
+from botocore.exceptions import ClientError
 from moto import mock_s3
 
 from trigger.handler import main
@@ -33,11 +34,11 @@ trigger_payload = json.loads(
         "s3SchemaVersion": "1.0",
         "configurationId": "testConfigRule",
         "bucket": {
-          "name": "fakebucket",
+          "name": "fake-upload-bucket",
           "ownerIdentity": {
             "principalId": "EXAMPLE"
           },
-          "arn": "arn:aws:s3:::fakebucket"
+          "arn": "arn:aws:s3:::fake-upload-bucket"
         },
         "object": {
           "key": "X01000000/2019-09-30T17%3A00%3A02.396833/data",
@@ -77,15 +78,19 @@ class HandlerTests(TestCase):
         # set fake credentials for services
         # we're going to have mocked interactions with
         self.repo = "chris48s/does-not-exist"
+        self.upload_bucket = "fake-upload-bucket"
+        self.final_bucket = "fake-final-bucket"
         os.environ["GITHUB_REPO"] = self.repo
         os.environ["GITHUB_API_KEY"] = "testing"
         os.environ["WDIV_API_KEY"] = "testing"
+        os.environ["FINAL_BUCKET_NAME"] = self.final_bucket
 
         # set up pretend s3 bucket
         self.s3mock = mock_s3()
         self.s3mock.start()
         self.conn = boto3.client("s3")
-        self.conn.create_bucket(Bucket="fakebucket")
+        self.conn.create_bucket(Bucket=self.upload_bucket)
+        self.conn.create_bucket(Bucket=self.final_bucket)
 
         # mock all the HTTP responses we're going to make
         responses.start()
@@ -125,7 +130,7 @@ class HandlerTests(TestCase):
         )
         fixture = open(f"tests/fixtures/{filename}", "rb").read()
         self.conn.put_object(
-            Bucket="fakebucket",
+            Bucket=self.upload_bucket,
             Key="X01000000/2019-09-30T17:00:02.396833/data",
             Body=fixture,
             ContentType=guess_content_type(filename),
@@ -155,6 +160,11 @@ class HandlerTests(TestCase):
             "timestamp": "2019-09-30T17:00:02.396833",
         }
         self.assertDictEqual(expected_dict, json.loads(responses.calls[2].request.body))
+        resp = self.conn.get_object(
+            Bucket=self.final_bucket,
+            Key="X01000000/2019-09-30T17:00:02.396833/report.json",
+        )
+        self.assertEqual(expected_dict, json.loads(resp["Body"].read()))
 
     def test_invalid(self):
         self.load_fixture("incomplete-file.CSV")
@@ -176,3 +186,8 @@ class HandlerTests(TestCase):
             "timestamp": "2019-09-30T17:00:02.396833",
         }
         self.assertDictEqual(expected_dict, json.loads(responses.calls[0].request.body))
+        with self.assertRaises(ClientError):
+            self.conn.get_object(
+                Bucket=self.final_bucket,
+                Key="X01000000/2019-09-30T17:00:02.396833/report.json",
+            )

@@ -1,5 +1,6 @@
 {
-    "BUCKET_NAME": "pollingstations-data-dev",
+    "TEMP_BUCKET_NAME": "pollingstations-uploads-dev",
+    "FINAL_BUCKET_NAME": "pollingstations-data-dev",
     "SENTRY_DSN": "",
     "GITHUB_REPO": "DemocracyClub/UK-Polling-Stations",
     "GITHUB_API_KEY": "",
