@@ -108,9 +108,15 @@ class HandlerTests(TestCase):
             body=json.dumps({"name": "Piddleton Parish Council"}),
         )
         responses.add(
+            responses.GET,
+            f"https://api.github.com/repos/{self.repo}/issues?state=open&labels=Data%20Import",
+            json=[],
+            status=200,
+        )
+        responses.add(
             responses.POST,
             f"https://api.github.com/repos/{self.repo}/issues",
-            json={"url": f"https://github.com/{self.repo}/issues/1"},
+            json={"html_url": f"https://github.com/{self.repo}/issues/1"},
             status=200,
         )
         responses.add(
@@ -149,14 +155,14 @@ class HandlerTests(TestCase):
 
         main(trigger_payload, None)
 
-        self.assertEqual(3, len(responses.calls))
+        self.assertEqual(4, len(responses.calls))
         self.assertEqual(
             f"https://api.github.com/repos/{self.repo}/issues",
-            responses.calls[1].request.url,
+            responses.calls[2].request.url,
         )
         self.assertEqual(
             "https://wheredoivote.co.uk/api/doesnt/exist/yet",
-            responses.calls[2].request.url,
+            responses.calls[3].request.url,
         )
         expected_dict = {
             "csv_valid": True,
@@ -168,7 +174,7 @@ class HandlerTests(TestCase):
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
         }
-        self.assertDictEqual(expected_dict, json.loads(responses.calls[2].request.body))
+        self.assertDictEqual(expected_dict, json.loads(responses.calls[3].request.body))
         resp = self.conn.get_object(
             Bucket=self.final_bucket,
             Key="X01000000/2019-09-30T17:00:02.396833/report.json",

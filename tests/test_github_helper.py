@@ -31,13 +31,22 @@ class GitHubHelperTests(TestCase):
             )
             m.assert_not_called()
 
-    def test_raise_issue_with_key(self):
+    def test_raise_new_issue_with_key(self):
         repo = "chris48s/does-not-exist"
         key = "f00b42"
         responses.add(
+            responses.GET,
+            f"https://api.github.com/repos/{repo}/issues?state=open&labels=Data%20Import",
+            json=[
+                {"title": "Import X01000001-Some Other Council", "number": 1232},
+                {"title": "Import X01000002-Some Other Council", "number": 1233},
+            ],
+            status=200,
+        )
+        responses.add(
             responses.POST,
             f"https://api.github.com/repos/{repo}/issues",
-            json={"url": f"https://github.com/{repo}/issues/1"},
+            json={"html_url": f"https://github.com/{repo}/issues/1"},
             status=200,
         )
         report = {
@@ -47,17 +56,60 @@ class GitHubHelperTests(TestCase):
         }
 
         issue_link = raise_github_issue(key, repo, report)
-        github_call = responses.calls[0]
+        raise_issue_call = responses.calls[1]
         self.assertEqual(f"https://github.com/{repo}/issues/1", issue_link)
         self.assertEqual(
-            f"https://api.github.com/repos/{repo}/issues", github_call.request.url
+            f"https://api.github.com/repos/{repo}/issues", raise_issue_call.request.url
         )
-        self.assertEqual(f"token {key}", github_call.request.headers["Authorization"])
+        self.assertEqual(
+            f"token {key}", raise_issue_call.request.headers["Authorization"]
+        )
         self.assertDictEqual(
             {
                 "title": "Import X01000000-Piddleton Parish Council",
                 "body": "EMS: Xpress",
                 "labels": ["Data Import", "ready"],
             },
-            json.loads(github_call.request.body),
+            json.loads(raise_issue_call.request.body),
+        )
+
+    def test_update_existing_issue_with_key(self):
+        repo = "chris48s/does-not-exist"
+        key = "f00b42"
+        responses.add(
+            responses.GET,
+            f"https://api.github.com/repos/{repo}/issues?state=open&labels=Data%20Import",
+            json=[
+                {"title": "Import X01000001-Some Other Council", "number": 1232},
+                {"title": "Import X01000002-Some Other Council", "number": 1233},
+                {"title": "Import X01000000-Piddleton Parish Council", "number": 1234},
+            ],
+            status=200,
+        )
+        responses.add(
+            responses.POST,
+            f"https://api.github.com/repos/{repo}/issues/1234/comments",
+            json={"html_url": f"https://github.com/{repo}/issues/1234#issuecomment-1"},
+            status=200,
+        )
+        report = {
+            "gss": "X01000000",
+            "council_name": "Piddleton Parish Council",
+            "ems": "Xpress",
+        }
+
+        issue_link = raise_github_issue(key, repo, report)
+        update_issue_call = responses.calls[1]
+        self.assertEqual(
+            f"https://github.com/{repo}/issues/1234#issuecomment-1", issue_link
+        )
+        self.assertEqual(
+            f"https://api.github.com/repos/{repo}/issues/1234/comments",
+            update_issue_call.request.url,
+        )
+        self.assertEqual(
+            f"token {key}", update_issue_call.request.headers["Authorization"]
+        )
+        self.assertDictEqual(
+            {"body": "Updated\nEMS: Xpress"}, json.loads(update_issue_call.request.body)
         )
