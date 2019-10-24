@@ -20,6 +20,7 @@ def register_env():
         "GITHUB_API_KEY": os.getenv("GITHUB_API_KEY", ""),
         "WDIV_API_KEY": os.getenv("WDIV_API_KEY", ""),
         "FINAL_BUCKET_NAME": os.getenv("FINAL_BUCKET_NAME", ""),
+        "AWS_REGION": os.getenv("AWS_REGION", ""),
     }
 
 
@@ -76,7 +77,7 @@ def main(event, context):
         )
         print("success")
     else:
-        ses = boto3.client("ses")
+        ses = boto3.client("ses", CONSTANTS["AWS_REGION"])
         reasons = "\n".join(report["errors"])
         council = f"{report['gss']}-{report['council_name']}"
         response = ses.send_email(

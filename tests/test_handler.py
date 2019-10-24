@@ -81,10 +81,12 @@ class HandlerTests(TestCase):
         self.repo = "chris48s/does-not-exist"
         self.upload_bucket = "fake-upload-bucket"
         self.final_bucket = "fake-final-bucket"
+        region = "eu-west-1"
         os.environ["GITHUB_REPO"] = self.repo
         os.environ["GITHUB_API_KEY"] = "testing"
         os.environ["WDIV_API_KEY"] = "testing"
         os.environ["FINAL_BUCKET_NAME"] = self.final_bucket
+        os.environ["AWS_REGION"] = region
 
         # set up pretend s3 bucket
         self.s3mock = mock_s3()
@@ -96,7 +98,7 @@ class HandlerTests(TestCase):
         # mock SES
         self.sesmock = mock_ses()
         self.sesmock.start()
-        conn = boto3.client("ses")
+        conn = boto3.client("ses", region)
         conn.verify_email_identity(EmailAddress="pollingstations@democracyclub.org.uk")
 
         # mock all the HTTP responses we're going to make
