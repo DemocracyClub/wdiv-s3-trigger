@@ -11,12 +11,6 @@ from trigger.github_helpers import raise_github_issue
 class GitHubHelperTests(TestCase):
     def setUp(self):
         responses.start()
-        responses.add(
-            responses.GET,
-            f"https://wheredoivote.co.uk/api/beta/councils/X01000000.json",
-            status=200,
-            body=json.dumps({"name": "Piddleton Parish Council"}),
-        )
         sys.stdout = io.StringIO()
 
     def tearDown(self):
@@ -27,7 +21,11 @@ class GitHubHelperTests(TestCase):
     def test_raise_issue_without_key(self):
         m = mock.Mock()
         with mock.patch("trigger.github_helpers.requests.post", m):
-            report = {"gss": "X01000000", "ems": "Xpress"}
+            report = {
+                "gss": "X01000000",
+                "council_name": "Piddleton Parish Council",
+                "ems": "Xpress",
+            }
             self.assertIsNone(
                 raise_github_issue(None, "chris48s/does-not-exist", report)
             )
@@ -42,10 +40,14 @@ class GitHubHelperTests(TestCase):
             json={"url": f"https://github.com/{repo}/issues/1"},
             status=200,
         )
-        report = {"gss": "X01000000", "ems": "Xpress"}
+        report = {
+            "gss": "X01000000",
+            "council_name": "Piddleton Parish Council",
+            "ems": "Xpress",
+        }
 
         issue_link = raise_github_issue(key, repo, report)
-        github_call = responses.calls[1]
+        github_call = responses.calls[0]
         self.assertEqual(f"https://github.com/{repo}/issues/1", issue_link)
         self.assertEqual(
             f"https://api.github.com/repos/{repo}/issues", github_call.request.url

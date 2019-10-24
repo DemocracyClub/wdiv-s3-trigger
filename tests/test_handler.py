@@ -7,7 +7,8 @@ from unittest import TestCase
 import boto3
 import responses
 from botocore.exceptions import ClientError
-from moto import mock_s3
+from moto import mock_s3, mock_ses
+from moto.ses import ses_backend
 
 from trigger.handler import main
 
@@ -92,6 +93,12 @@ class HandlerTests(TestCase):
         self.conn.create_bucket(Bucket=self.upload_bucket)
         self.conn.create_bucket(Bucket=self.final_bucket)
 
+        # mock SES
+        self.sesmock = mock_ses()
+        self.sesmock.start()
+        conn = boto3.client("ses")
+        conn.verify_email_identity(EmailAddress="pollingstations@democracyclub.org.uk")
+
         # mock all the HTTP responses we're going to make
         responses.start()
         responses.add(
@@ -119,6 +126,7 @@ class HandlerTests(TestCase):
         responses.stop()
         responses.reset()
         self.s3mock.stop()
+        self.sesmock.stop()
         sys.stdout = sys.__stdout__
 
     def load_fixture(self, filename):
@@ -157,6 +165,7 @@ class HandlerTests(TestCase):
             "errors": [],
             "gh_issue": f"https://github.com/{self.repo}/issues/1",
             "gss": "X01000000",
+            "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
         }
         self.assertDictEqual(expected_dict, json.loads(responses.calls[2].request.body))
@@ -165,16 +174,17 @@ class HandlerTests(TestCase):
             Key="X01000000/2019-09-30T17:00:02.396833/report.json",
         )
         self.assertEqual(expected_dict, json.loads(resp["Body"].read()))
+        self.assertEqual(0, len(ses_backend.sent_messages))
 
     def test_invalid(self):
         self.load_fixture("incomplete-file.CSV")
 
         main(trigger_payload, None)
 
-        self.assertEqual(1, len(responses.calls))
+        self.assertEqual(2, len(responses.calls))
         self.assertEqual(
             "https://wheredoivote.co.uk/api/doesnt/exist/yet",
-            responses.calls[0].request.url,
+            responses.calls[1].request.url,
         )
         expected_dict = {
             "csv_valid": False,
@@ -183,11 +193,18 @@ class HandlerTests(TestCase):
             "errors": ["Incomplete file: Expected 38 columns on row 10 found 7"],
             "gh_issue": None,
             "gss": "X01000000",
+            "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
         }
-        self.assertDictEqual(expected_dict, json.loads(responses.calls[0].request.body))
+        self.assertDictEqual(expected_dict, json.loads(responses.calls[1].request.body))
         with self.assertRaises(ClientError):
             self.conn.get_object(
                 Bucket=self.final_bucket,
                 Key="X01000000/2019-09-30T17:00:02.396833/report.json",
             )
+        print(ses_backend.sent_messages[0].__dict__)
+        self.assertEqual(1, len(ses_backend.sent_messages))
+        self.assertEqual(
+            "Error with data for council X01000000-Piddleton Parish Council",
+            ses_backend.sent_messages[0].subject,
+        )

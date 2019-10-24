@@ -7,7 +7,7 @@ import sentry_sdk
 
 from .csv_helpers import get_csv_report, get_object_report
 from .github_helpers import raise_github_issue
-from .wdiv_helpers import submit_report
+from .wdiv_helpers import gss_to_council, submit_report
 
 
 def register_env():
@@ -59,6 +59,8 @@ def main(event, context):
     if not report["errors"]:
         report = {**report, **get_csv_report(response)}
 
+    report["council_name"] = gss_to_council(report["gss"])
+
     if report["csv_valid"]:
         s3.copy({"Bucket": bucket, "Key": key}, CONSTANTS["FINAL_BUCKET_NAME"], key)
         issue = raise_github_issue(
@@ -72,8 +74,28 @@ def main(event, context):
             Body=json.dumps(report, indent=2),
             ContentType="application/json",
         )
+        print("success")
     else:
-        # TODO: email pollingstations@democracyclub.org.uk
-        print("oh noes! :(")
+        ses = boto3.client("ses")
+        reasons = "\n".join(report["errors"])
+        council = f"{report['gss']}-{report['council_name']}"
+        response = ses.send_email(
+            Source="pollingstations@democracyclub.org.uk",
+            Destination={"ToAddresses": ["pollingstations@democracyclub.org.uk"]},
+            Message={
+                "Subject": {
+                    "Data": f"Error with data for council {council}",
+                    "Charset": "utf-8",
+                },
+                "Body": {
+                    "Text": {
+                        "Data": f"Data for council {council} "
+                        f"failed because:\n{reasons}\n\nPlease follow up.",
+                        "Charset": "utf-8",
+                    }
+                },
+            },
+        )
+        print("failure")
 
     submit_report(CONSTANTS["WDIV_API_KEY"], report)

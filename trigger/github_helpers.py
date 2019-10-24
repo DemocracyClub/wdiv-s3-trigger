@@ -1,8 +1,6 @@
 import requests
 from requests.exceptions import HTTPError
 
-from .wdiv_helpers import gss_to_council
-
 
 class GitHubIssue:
     def __init__(self, api_key, repo, title, body):
@@ -50,8 +48,7 @@ class GitHubIssue:
 
 
 def raise_github_issue(api_key, repo, report):
-    council_name = gss_to_council(report["gss"])
-    title = f"Import {report['gss']}-{council_name}"
+    title = f"Import {report['gss']}-{report['council_name']}"
     try:
         # TODO: put more info from the report in the GH issue?
         body = f"EMS: {report['ems']}"
