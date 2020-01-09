@@ -9,6 +9,8 @@ def detect_ems(header):
         return "Xpress WebLookup"
     if first_col == "electiondate":
         return "Xpress DC"
+    if "xordinate" in [h.lower() for h in header]:
+        return "Democracy Counts"
     return "unknown"
 
 

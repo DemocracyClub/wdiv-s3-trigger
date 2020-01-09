@@ -62,7 +62,7 @@ class HandlerTests(TestCase):
 
     As we add additional interactions and associated credentials,
     its important to remember to remember to add mocks for them.
-    Responses should help wit this by throwing
+    Responses should help with this by throwing
     `Connection refused by Responses: POST https://thing.i/didnt/mock/yet doesn't match Responses Mock`
     """
 
@@ -87,6 +87,7 @@ class HandlerTests(TestCase):
         os.environ["WDIV_API_KEY"] = "testing"
         os.environ["FINAL_BUCKET_NAME"] = self.final_bucket
         os.environ["AWS_REGION"] = region
+        os.environ["ERROR_REPORT_EMAIL"] = "fred@example.com"
 
         # set up pretend s3 bucket
         self.s3mock = mock_s3()
@@ -137,7 +138,7 @@ class HandlerTests(TestCase):
         self.sesmock.stop()
         sys.stdout = sys.__stdout__
 
-    def load_fixture(self, filename):
+    def load_fixture(self, filename, key="data"):
         # load a fixture into our pretend S3 bucket
         guess_content_type = (
             lambda filename: "text/tab-separated-values"
@@ -147,12 +148,12 @@ class HandlerTests(TestCase):
         fixture = open(f"tests/fixtures/{filename}", "rb").read()
         self.conn.put_object(
             Bucket=self.upload_bucket,
-            Key="X01000000/2019-09-30T17:00:02.396833/data",
+            Key=f"X01000000/2019-09-30T17:00:02.396833/{key}",
             Body=fixture,
             ContentType=guess_content_type(filename),
         )
 
-    def test_valid(self):
+    def test_valid_one_file(self):
         self.load_fixture("ems-idox-eros.csv")
 
         main(trigger_payload, None)
@@ -167,14 +168,19 @@ class HandlerTests(TestCase):
             responses.calls[3].request.url,
         )
         expected_dict = {
-            "csv_valid": True,
-            "csv_rows": 10,
-            "ems": "Idox Eros (Halarose)",
-            "errors": [],
             "gh_issue": f"https://github.com/{self.repo}/issues/1",
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
+            "files": [
+                {
+                    "key": "X01000000/2019-09-30T17:00:02.396833/data",
+                    "csv_valid": True,
+                    "csv_rows": 10,
+                    "ems": "Idox Eros (Halarose)",
+                    "errors": [],
+                }
+            ],
         }
         self.assertDictEqual(expected_dict, json.loads(responses.calls[3].request.body))
         resp = self.conn.get_object(
@@ -184,7 +190,85 @@ class HandlerTests(TestCase):
         self.assertEqual(expected_dict, json.loads(resp["Body"].read()))
         self.assertEqual(0, len(ses_backend.sent_messages))
 
-    def test_invalid(self):
+    def test_valid_democracy_counts(self):
+        self.load_fixture("ems-dcounts-stations.csv", "ems-dcounts-stations.csv")
+        self.load_fixture("ems-dcounts-districts.csv", "ems-dcounts-districts.csv")
+
+        main(trigger_payload, None)
+
+        self.assertEqual(4, len(responses.calls))
+        self.assertEqual(
+            f"https://api.github.com/repos/{self.repo}/issues",
+            responses.calls[2].request.url,
+        )
+        self.assertEqual(
+            "https://wheredoivote.co.uk/api/doesnt/exist/yet",
+            responses.calls[3].request.url,
+        )
+        expected_dict = {
+            "gh_issue": f"https://github.com/{self.repo}/issues/1",
+            "gss": "X01000000",
+            "council_name": "Piddleton Parish Council",
+            "timestamp": "2019-09-30T17:00:02.396833",
+            "files": [
+                {
+                    "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-districts.csv",
+                    "csv_valid": True,
+                    "csv_rows": 20,
+                    "ems": "Democracy Counts",
+                    "errors": [],
+                },
+                {
+                    "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-stations.csv",
+                    "csv_valid": True,
+                    "csv_rows": 20,
+                    "ems": "Democracy Counts",
+                    "errors": [],
+                },
+            ],
+        }
+        self.assertDictEqual(expected_dict, json.loads(responses.calls[3].request.body))
+        resp = self.conn.get_object(
+            Bucket=self.final_bucket,
+            Key="X01000000/2019-09-30T17:00:02.396833/report.json",
+        )
+        self.assertEqual(expected_dict, json.loads(resp["Body"].read()))
+        self.assertEqual(0, len(ses_backend.sent_messages))
+
+    def test_democracy_counts_only_one_file(self):
+        self.load_fixture("ems-dcounts-stations.csv", "ems-dcounts-stations.csv")
+
+        main(trigger_payload, None)
+
+        self.assertEqual(2, len(responses.calls))
+        self.assertEqual(
+            "https://wheredoivote.co.uk/api/doesnt/exist/yet",
+            responses.calls[1].request.url,
+        )
+        expected_dict = {
+            "gh_issue": None,
+            "gss": "X01000000",
+            "council_name": "Piddleton Parish Council",
+            "timestamp": "2019-09-30T17:00:02.396833",
+            "files": [
+                {
+                    "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-stations.csv",
+                    "csv_valid": False,
+                    "csv_rows": 20,
+                    "ems": "Democracy Counts",
+                    "errors": ["Expected 2 files, found 1"],
+                }
+            ],
+        }
+        self.assertDictEqual(expected_dict, json.loads(responses.calls[1].request.body))
+        with self.assertRaises(ClientError):
+            self.conn.get_object(
+                Bucket=self.final_bucket,
+                Key="X01000000/2019-09-30T17:00:02.396833/report.json",
+            )
+        self.assertEqual(0, len(ses_backend.sent_messages))
+
+    def test_invalid_one_file(self):
         self.load_fixture("incomplete-file.CSV")
 
         main(trigger_payload, None)
@@ -195,14 +279,21 @@ class HandlerTests(TestCase):
             responses.calls[1].request.url,
         )
         expected_dict = {
-            "csv_valid": False,
-            "csv_rows": 10,
-            "ems": "Xpress DC",
-            "errors": ["Incomplete file: Expected 38 columns on row 10 found 7"],
             "gh_issue": None,
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
+            "files": [
+                {
+                    "key": "X01000000/2019-09-30T17:00:02.396833/data",
+                    "csv_valid": False,
+                    "csv_rows": 10,
+                    "ems": "Xpress DC",
+                    "errors": [
+                        "Incomplete file: Expected 38 columns on row 10 found 7"
+                    ],
+                }
+            ],
         }
         self.assertDictEqual(expected_dict, json.loads(responses.calls[1].request.body))
         with self.assertRaises(ClientError):
@@ -210,7 +301,6 @@ class HandlerTests(TestCase):
                 Bucket=self.final_bucket,
                 Key="X01000000/2019-09-30T17:00:02.396833/report.json",
             )
-        print(ses_backend.sent_messages[0].__dict__)
         self.assertEqual(1, len(ses_backend.sent_messages))
         self.assertEqual(
             "Error with data for council X01000000-Piddleton Parish Council",

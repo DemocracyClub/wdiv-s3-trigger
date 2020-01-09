@@ -7,29 +7,29 @@ provider:
   # these limits should be sufficient
   # but we can crank them up if we need to
   memorySize: 1024
-  timeout: 10
+  timeout: 15
 
   iamRoleStatements:
     - Effect: "Allow"
       Action:
         - "s3:GetObject"
-      Resource:
-        - "arn:aws:s3:::${file(./settings.${opt:stage}.json):TEMP_BUCKET_NAME}/*"
-    - Effect: "Allow"
-      Action:
         - "s3:PutObject"
       Resource:
         - "arn:aws:s3:::${file(./settings.${opt:stage}.json):TEMP_BUCKET_NAME}/*"
+
+    - Effect: "Allow"
+      Action:
+        - "s3:ListBucket"
+      Resource:
+        - "arn:aws:s3:::${file(./settings.${opt:stage}.json):TEMP_BUCKET_NAME}"
+
     - Effect: "Allow"
       Action:
         - "s3:GetObject"
-      Resource:
-        - "arn:aws:s3:::${file(./settings.${opt:stage}.json):FINAL_BUCKET_NAME}/*"
-    - Effect: "Allow"
-      Action:
         - "s3:PutObject"
       Resource:
         - "arn:aws:s3:::${file(./settings.${opt:stage}.json):FINAL_BUCKET_NAME}/*"
+
     - Effect: "Allow"
       Action:
         - "ses:SendEmail"
@@ -43,6 +43,7 @@ provider:
     GITHUB_API_KEY: ${file(./settings.${opt:stage}.json):GITHUB_API_KEY}
     WDIV_API_KEY: ${file(./settings.${opt:stage}.json):WDIV_API_KEY}
     FINAL_BUCKET_NAME: ${file(./settings.${opt:stage}.json):FINAL_BUCKET_NAME}
+    ERROR_REPORT_EMAIL: ${file(./settings.${opt:stage}.json):ERROR_REPORT_EMAIL}
 
 package:
   include:

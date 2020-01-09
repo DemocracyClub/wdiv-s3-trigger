@@ -4,5 +4,6 @@
     "SENTRY_DSN": "",
     "GITHUB_REPO": "DemocracyClub/UK-Polling-Stations",
     "GITHUB_API_KEY": "",
-    "WDIV_API_KEY": ""
+    "WDIV_API_KEY": "",
+    "ERROR_REPORT_EMAIL": ""
 }

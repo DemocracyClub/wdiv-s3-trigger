@@ -29,6 +29,18 @@ class CsvHelperTests(TestCase):
         self.assertEqual(10, report["csv_rows"])
         self.assertEqual("Xpress WebLookup", report["ems"])
 
+    def test_dcounts_stations(self):
+        report = get_csv_report(get_fixture("ems-dcounts-stations.csv", "text/csv"))
+        self.assertTrue(report["csv_valid"])
+        self.assertEqual(20, report["csv_rows"])
+        self.assertEqual("Democracy Counts", report["ems"])
+
+    def test_dcounts_districts(self):
+        report = get_csv_report(get_fixture("ems-dcounts-districts.csv", "text/csv"))
+        self.assertTrue(report["csv_valid"])
+        self.assertEqual(20, report["csv_rows"])
+        self.assertEqual("Democracy Counts", report["ems"])
+
     def test_valid_other(self):
         report = get_csv_report(get_fixture("ems-other.csv", "text/csv"))
         self.assertTrue(report["csv_valid"])
