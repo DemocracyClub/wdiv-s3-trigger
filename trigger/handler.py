@@ -54,7 +54,7 @@ def get_report(s3, bucket, key):
         "council_name": gss_to_council(path.parts[0]),
         "timestamp": path.parts[1],
         "gh_issue": None,
-        "files": [],
+        "file_set": [],
     }
 
     objects = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
@@ -68,7 +68,7 @@ def get_report(s3, bucket, key):
     ]
 
     for f in files:
-        report["files"].append(get_file_report(s3, bucket, f))
+        report["file_set"].append(get_file_report(s3, bucket, f))
 
     return report
 
@@ -79,7 +79,9 @@ def all_files_valid(files):
 
 def get_email_text(report):
     text = ""
-    errors = {f["key"]: "\n".join(f["errors"]) for f in report["files"] if f["errors"]}
+    errors = {
+        f["key"]: "\n".join(f["errors"]) for f in report["file_set"] if f["errors"]
+    }
     for key, error in errors.items():
         text = text + f"\n{key}:\n{error}\n"
     return text
@@ -117,7 +119,7 @@ def sync_report_to_s3(s3, bucket, prefix, report):
         # and leave the existing report in place.
         resp = s3.get_object(Bucket=bucket, Key=report_path)
         old_report = json.loads(resp["Body"].read())
-        if len(old_report["files"]) >= len(report["files"]):
+        if len(old_report["file_set"]) >= len(report["file_set"]):
             return
         # Only overwrite the old report with the new report
         # if the new one has more stuff in it
@@ -146,19 +148,22 @@ def main(event, context):
     report = get_report(s3, bucket, key)
     surpress_email = False
 
-    if len(report["files"]) == 1 and report["files"][0]["ems"] == "Democracy Counts":
-        if len(report["files"][0]["errors"]) == 0:
+    if (
+        len(report["file_set"]) == 1
+        and report["file_set"][0]["ems"] == "Democracy Counts"
+    ):
+        if len(report["file_set"][0]["errors"]) == 0:
             # If the only error is that EMS is Democracy Counts and we've only
             # got one file, don't send an email notification about this problem.
             # Otherwise, we'll generate an email notification every time we
             # process file 1 of 2.
             surpress_email = True
-        report["files"][0]["csv_valid"] = False
-        report["files"][0]["errors"].append("Expected 2 files, found 1")
+        report["file_set"][0]["csv_valid"] = False
+        report["file_set"][0]["errors"].append("Expected 2 files, found 1")
 
-    if all_files_valid(report["files"]):
+    if all_files_valid(report["file_set"]):
         # copy all the files from the temp bucket to the final bucket
-        for f in report["files"]:
+        for f in report["file_set"]:
             s3.copy(
                 {"Bucket": bucket, "Key": f["key"]},
                 CONSTANTS["FINAL_BUCKET_NAME"],

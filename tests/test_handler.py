@@ -172,7 +172,7 @@ class HandlerTests(TestCase):
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
-            "files": [
+            "file_set": [
                 {
                     "key": "X01000000/2019-09-30T17:00:02.396833/data",
                     "csv_valid": True,
@@ -210,7 +210,7 @@ class HandlerTests(TestCase):
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
-            "files": [
+            "file_set": [
                 {
                     "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-districts.csv",
                     "csv_valid": True,
@@ -250,7 +250,7 @@ class HandlerTests(TestCase):
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
-            "files": [
+            "file_set": [
                 {
                     "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-stations.csv",
                     "csv_valid": False,
@@ -283,7 +283,7 @@ class HandlerTests(TestCase):
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
-            "files": [
+            "file_set": [
                 {
                     "key": "X01000000/2019-09-30T17:00:02.396833/data",
                     "csv_valid": False,
