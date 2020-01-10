@@ -64,7 +64,7 @@ class GitHubIssue:
         print(f"title: {self.title}")
         print(f"body: {self.body}")
         print("---")
-        return None
+        return ""
 
     def raise_issue(self):
         if self.api_key:

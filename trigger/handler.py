@@ -53,7 +53,7 @@ def get_report(s3, bucket, key):
         "gss": path.parts[0],
         "council_name": gss_to_council(path.parts[0]),
         "timestamp": path.parts[1],
-        "gh_issue": None,
+        "github_issue": "",
         "file_set": [],
     }
 
@@ -174,7 +174,7 @@ def main(event, context):
         issue = raise_github_issue(
             CONSTANTS["GITHUB_API_KEY"], CONSTANTS["GITHUB_REPO"], report
         )
-        report["gh_issue"] = issue
+        report["github_issue"] = issue
 
         sync_report_to_s3(s3, CONSTANTS["FINAL_BUCKET_NAME"], prefix, report)
         print("success")

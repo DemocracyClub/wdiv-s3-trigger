@@ -26,8 +26,8 @@ class GitHubHelperTests(TestCase):
                 "council_name": "Piddleton Parish Council",
                 "ems": "Xpress",
             }
-            self.assertIsNone(
-                raise_github_issue(None, "chris48s/does-not-exist", report)
+            self.assertEqual(
+                "", raise_github_issue(None, "chris48s/does-not-exist", report)
             )
             m.assert_not_called()
 

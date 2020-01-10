@@ -168,7 +168,7 @@ class HandlerTests(TestCase):
             responses.calls[3].request.url,
         )
         expected_dict = {
-            "gh_issue": f"https://github.com/{self.repo}/issues/1",
+            "github_issue": f"https://github.com/{self.repo}/issues/1",
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
@@ -206,7 +206,7 @@ class HandlerTests(TestCase):
             responses.calls[3].request.url,
         )
         expected_dict = {
-            "gh_issue": f"https://github.com/{self.repo}/issues/1",
+            "github_issue": f"https://github.com/{self.repo}/issues/1",
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
@@ -246,7 +246,7 @@ class HandlerTests(TestCase):
             responses.calls[1].request.url,
         )
         expected_dict = {
-            "gh_issue": None,
+            "github_issue": "",
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
@@ -279,7 +279,7 @@ class HandlerTests(TestCase):
             responses.calls[1].request.url,
         )
         expected_dict = {
-            "gh_issue": None,
+            "github_issue": "",
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
