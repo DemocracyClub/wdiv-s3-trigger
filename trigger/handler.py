@@ -79,9 +79,7 @@ def all_files_valid(files):
 
 def get_email_text(report):
     text = ""
-    errors = {
-        f["key"]: "\n".join(f["errors"]) for f in report["file_set"] if f["errors"]
-    }
+    errors = {f["key"]: f["errors"] for f in report["file_set"] if f["errors"]}
     for key, error in errors.items():
         text = text + f"\n{key}:\n{error}\n"
     return text
@@ -160,6 +158,9 @@ def main(event, context):
             surpress_email = True
         report["file_set"][0]["csv_valid"] = False
         report["file_set"][0]["errors"].append("Expected 2 files, found 1")
+
+    for f in report["file_set"]:
+        f["errors"] = "\n".join(f["errors"])
 
     if all_files_valid(report["file_set"]):
         # copy all the files from the temp bucket to the final bucket
