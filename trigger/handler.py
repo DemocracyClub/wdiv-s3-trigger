@@ -24,6 +24,7 @@ def register_env():
         "FINAL_BUCKET_NAME": os.getenv("FINAL_BUCKET_NAME", ""),
         "AWS_REGION": os.getenv("AWS_REGION", ""),
         "ERROR_REPORT_EMAIL": os.getenv("ERROR_REPORT_EMAIL", ""),
+        "WDIV_WEBHOOK_URL": os.getenv("WDIV_WEBHOOK_URL", ""),
     }
 
 
@@ -184,4 +185,4 @@ def main(event, context):
             send_error_email(ses, report, CONSTANTS["ERROR_REPORT_EMAIL"])
         print("failure")
 
-    submit_report(CONSTANTS["WDIV_API_KEY"], report)
+    submit_report(CONSTANTS["WDIV_WEBHOOK_URL"], CONSTANTS["WDIV_API_KEY"], report)

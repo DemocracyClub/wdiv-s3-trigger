@@ -88,6 +88,7 @@ class HandlerTests(TestCase):
         os.environ["FINAL_BUCKET_NAME"] = self.final_bucket
         os.environ["AWS_REGION"] = region
         os.environ["ERROR_REPORT_EMAIL"] = "fred@example.com"
+        os.environ["WDIV_WEBHOOK_URL"] = "https://wheredoivote.co.uk/api/beta/uploads/"
 
         # set up pretend s3 bucket
         self.s3mock = mock_s3()
@@ -124,7 +125,7 @@ class HandlerTests(TestCase):
         )
         responses.add(
             responses.POST,
-            "https://wheredoivote.co.uk/api/doesnt/exist/yet",
+            "https://wheredoivote.co.uk/api/beta/uploads/",
             json={},
             status=200,
         )
@@ -164,7 +165,7 @@ class HandlerTests(TestCase):
             responses.calls[2].request.url,
         )
         self.assertEqual(
-            "https://wheredoivote.co.uk/api/doesnt/exist/yet",
+            "https://wheredoivote.co.uk/api/beta/uploads/",
             responses.calls[3].request.url,
         )
         expected_dict = {
@@ -202,7 +203,7 @@ class HandlerTests(TestCase):
             responses.calls[2].request.url,
         )
         self.assertEqual(
-            "https://wheredoivote.co.uk/api/doesnt/exist/yet",
+            "https://wheredoivote.co.uk/api/beta/uploads/",
             responses.calls[3].request.url,
         )
         expected_dict = {
@@ -242,7 +243,7 @@ class HandlerTests(TestCase):
 
         self.assertEqual(2, len(responses.calls))
         self.assertEqual(
-            "https://wheredoivote.co.uk/api/doesnt/exist/yet",
+            "https://wheredoivote.co.uk/api/beta/uploads/",
             responses.calls[1].request.url,
         )
         expected_dict = {
@@ -275,7 +276,7 @@ class HandlerTests(TestCase):
 
         self.assertEqual(2, len(responses.calls))
         self.assertEqual(
-            "https://wheredoivote.co.uk/api/doesnt/exist/yet",
+            "https://wheredoivote.co.uk/api/beta/uploads/",
             responses.calls[1].request.url,
         )
         expected_dict = {
