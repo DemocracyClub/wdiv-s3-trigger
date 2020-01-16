@@ -38,12 +38,13 @@ provider:
         - Fn::Join: ["", [ "arn:aws:ses:", { "Ref": "AWS::Region" }, ':', { Ref: "AWS::AccountId" }, ":*" ]]
 
   environment:
+    FINAL_BUCKET_NAME: ${file(./settings.${opt:stage}.json):FINAL_BUCKET_NAME}
     SENTRY_DSN: ${file(./settings.${opt:stage}.json):SENTRY_DSN}
     GITHUB_REPO: ${file(./settings.${opt:stage}.json):GITHUB_REPO}
     GITHUB_API_KEY: ${file(./settings.${opt:stage}.json):GITHUB_API_KEY}
     WDIV_API_KEY: ${file(./settings.${opt:stage}.json):WDIV_API_KEY}
-    FINAL_BUCKET_NAME: ${file(./settings.${opt:stage}.json):FINAL_BUCKET_NAME}
     ERROR_REPORT_EMAIL: ${file(./settings.${opt:stage}.json):ERROR_REPORT_EMAIL}
+    WDIV_WEBHOOK_URL: ${file(./settings.${opt:stage}.json):WDIV_WEBHOOK_URL}
 
 package:
   include:

@@ -6,5 +6,5 @@
     "GITHUB_API_KEY": "",
     "WDIV_API_KEY": "",
     "ERROR_REPORT_EMAIL": "",
-    "WDIV_WEBHOOK_URL": "http://stage.wheredoivote.co.uk/api/beta/uploads/"
+    "WDIV_WEBHOOK_URL": "https://stage.wheredoivote.co.uk/api/beta/uploads/"
 }
