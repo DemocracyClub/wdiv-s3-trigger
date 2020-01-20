@@ -40,7 +40,7 @@ def get_delimiter(sample, content_type):
 
 
 def get_csv_report(response):
-    report = {"csv_valid": False, "csv_rows": None, "ems": "unknown", "errors": []}
+    report = {"csv_valid": False, "csv_rows": 0, "ems": "unknown", "errors": []}
 
     body = response["Body"].read()
     if len(body) == 0:

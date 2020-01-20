@@ -31,7 +31,7 @@ def register_env():
 def get_file_report(s3, bucket, key):
     report = {
         "csv_valid": False,
-        "csv_rows": None,
+        "csv_rows": 0,
         "ems": "unknown",
         "errors": [],
         "key": key,
