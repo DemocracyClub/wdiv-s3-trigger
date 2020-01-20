@@ -42,7 +42,7 @@ trigger_payload = json.loads(
           "arn": "arn:aws:s3:::fake-upload-bucket"
         },
         "object": {
-          "key": "X01000000/2019-09-30T17%3A00%3A02.396833/data",
+          "key": "X01000000/2019-09-30T17%3A00%3A02.396833/data.csv",
           "size": 1024,
           "eTag": "0123456789abcdef0123456789abcdef",
           "sequencer": "0A1B2C3D4E5F678901"
@@ -139,19 +139,21 @@ class HandlerTests(TestCase):
         self.sesmock.stop()
         sys.stdout = sys.__stdout__
 
-    def load_fixture(self, filename, key="data"):
+    def load_fixture(self, filename, key="data.csv", mimetype=None):
         # load a fixture into our pretend S3 bucket
         guess_content_type = (
             lambda filename: "text/tab-separated-values"
-            if filename.endswith((".tsv", ".TSV"))
+            if filename.lower().endswith(".tsv")
             else "text/csv"
         )
+        if not mimetype:
+            mimetype = guess_content_type(filename)
         fixture = open(f"tests/fixtures/{filename}", "rb").read()
         self.conn.put_object(
             Bucket=self.upload_bucket,
             Key=f"X01000000/2019-09-30T17:00:02.396833/{key}",
             Body=fixture,
-            ContentType=guess_content_type(filename),
+            ContentType=mimetype,
         )
 
     def test_valid_one_file(self):
@@ -175,7 +177,7 @@ class HandlerTests(TestCase):
             "timestamp": "2019-09-30T17:00:02.396833",
             "file_set": [
                 {
-                    "key": "X01000000/2019-09-30T17:00:02.396833/data",
+                    "key": "X01000000/2019-09-30T17:00:02.396833/data.csv",
                     "csv_valid": True,
                     "csv_rows": 10,
                     "ems": "Idox Eros (Halarose)",
@@ -286,7 +288,7 @@ class HandlerTests(TestCase):
             "timestamp": "2019-09-30T17:00:02.396833",
             "file_set": [
                 {
-                    "key": "X01000000/2019-09-30T17:00:02.396833/data",
+                    "key": "X01000000/2019-09-30T17:00:02.396833/data.csv",
                     "csv_valid": False,
                     "csv_rows": 10,
                     "ems": "Xpress DC",
@@ -305,3 +307,40 @@ class HandlerTests(TestCase):
             "Error with data for council X01000000-Piddleton Parish Council",
             ses_backend.sent_messages[0].subject,
         )
+
+    def test_valid_excel_imietype(self):
+        self.load_fixture("ems-idox-eros.csv", mimetype="application/vnd.ms-excel")
+
+        main(trigger_payload, None)
+
+        self.assertEqual(4, len(responses.calls))
+        self.assertEqual(
+            f"https://api.github.com/repos/{self.repo}/issues",
+            responses.calls[2].request.url,
+        )
+        self.assertEqual(
+            "https://wheredoivote.co.uk/api/beta/uploads/",
+            responses.calls[3].request.url,
+        )
+        expected_dict = {
+            "github_issue": f"https://github.com/{self.repo}/issues/1",
+            "gss": "X01000000",
+            "council_name": "Piddleton Parish Council",
+            "timestamp": "2019-09-30T17:00:02.396833",
+            "file_set": [
+                {
+                    "key": "X01000000/2019-09-30T17:00:02.396833/data.csv",
+                    "csv_valid": True,
+                    "csv_rows": 10,
+                    "ems": "Idox Eros (Halarose)",
+                    "errors": "",
+                }
+            ],
+        }
+        self.assertDictEqual(expected_dict, json.loads(responses.calls[3].request.body))
+        resp = self.conn.get_object(
+            Bucket=self.final_bucket,
+            Key="X01000000/2019-09-30T17:00:02.396833/report.json",
+        )
+        self.assertEqual(expected_dict, json.loads(resp["Body"].read()))
+        self.assertEqual(0, len(ses_backend.sent_messages))
