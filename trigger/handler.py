@@ -29,8 +29,7 @@ def register_env():
 
 
 def fix_mime_type(key, obj):
-    # As time goes on, will probably find other edge cases to account for here
-    if obj["ContentType"] in ("application/vnd.ms-excel", "application/octet-stream"):
+    if obj["ContentType"] not in ("text/csv", "text/tab-separated-values"):
         if key.lower().endswith(".csv"):
             obj["ContentType"] = "text/csv"
         if key.lower().endswith(".tsv"):
