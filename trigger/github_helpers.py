@@ -86,7 +86,7 @@ def raise_github_issue(api_key, repo, report):
     title = f"Import {report['gss']}-{report['council_name']}"
     try:
         # TODO: put more info from the report in the GH issue?
-        body = f"EMS: {report['ems']}"
+        body = f"EMS: {report['file_set'][0]['ems']}"
     except KeyError:
         body = ""
     issue = GitHubIssue(api_key, repo, title, body)
