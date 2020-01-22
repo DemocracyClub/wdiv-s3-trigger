@@ -24,7 +24,7 @@ class GitHubHelperTests(TestCase):
             report = {
                 "gss": "X01000000",
                 "council_name": "Piddleton Parish Council",
-                "ems": "Xpress",
+                "file_set": [{"key": "foo/bar", "ems": "Xpress"}],
             }
             self.assertEqual(
                 "", raise_github_issue(None, "chris48s/does-not-exist", report)
@@ -52,7 +52,7 @@ class GitHubHelperTests(TestCase):
         report = {
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
-            "ems": "Xpress",
+            "file_set": [{"key": "foo/bar", "ems": "Xpress"}],
         }
 
         issue_link = raise_github_issue(key, repo, report)
@@ -95,7 +95,7 @@ class GitHubHelperTests(TestCase):
         report = {
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
-            "ems": "Xpress",
+            "file_set": [{"key": "foo/bar", "ems": "Xpress"}],
         }
 
         issue_link = raise_github_issue(key, repo, report)
