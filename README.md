@@ -31,7 +31,7 @@ When you strip all those interactions away, there isn't much left. As such:
 
 * You can use TDD to develop locally, but it requires some fiddly setup to mock out all the interactions with external services. Fortunately there are some [integration tests](https://github.com/DemocracyClub/wdiv-s3-trigger/blob/master/tests/test_handler.py) which use [moto](https://github.com/spulec/moto) and [responses](https://github.com/getsentry/responses) for mocking which can serve as a pattern for future development.
 * In order to manually trigger the function, it is easiest to deploy to a staging lambda with staging buckets configured. SLS manages bucket permissions for the lambda function itself, but local/staging/live deploys of the WDIV codebase need to be able to write to the bucket defined in `TEMP_BUCKET_NAME`. This may be configured using tokens or role-based auth.
-* It is important to deploy with an appropriate [configuration](##configuration), and conversely, there is potential to make a mess in the real world/live environment by deploying with an incorrect configuration (e.g: staging deploy with real keys).
+* It is important to deploy with an appropriate [configuration](#configuration), and conversely, there is potential to make a mess in the real world/live environment by deploying with an incorrect configuration (e.g: staging deploy with real keys).
 
 ## Local Development
 
