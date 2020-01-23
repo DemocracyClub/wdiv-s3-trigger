@@ -24,7 +24,12 @@ class GitHubHelperTests(TestCase):
             report = {
                 "gss": "X01000000",
                 "council_name": "Piddleton Parish Council",
-                "file_set": [{"key": "foo/bar", "ems": "Xpress"}],
+                "file_set": [
+                    {
+                        "key": "X01000000/0000-00-00T00:00:00.00000/filename.csv",
+                        "ems": "Xpress",
+                    }
+                ],
             }
             self.assertEqual(
                 "", raise_github_issue(None, "chris48s/does-not-exist", report)
@@ -52,7 +57,12 @@ class GitHubHelperTests(TestCase):
         report = {
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
-            "file_set": [{"key": "foo/bar", "ems": "Xpress"}],
+            "file_set": [
+                {
+                    "key": "X01000000/0000-00-00T00:00:00.00000/filename.csv",
+                    "ems": "Xpress",
+                }
+            ],
         }
 
         issue_link = raise_github_issue(key, repo, report)
@@ -67,7 +77,7 @@ class GitHubHelperTests(TestCase):
         self.assertDictEqual(
             {
                 "title": "Import X01000000-Piddleton Parish Council",
-                "body": "EMS: Xpress",
+                "body": "EMS: Xpress\nFiles:\n- `X01000000/0000-00-00T00:00:00.00000/filename.csv`",
                 "labels": ["Data Import", "ready"],
             },
             json.loads(raise_issue_call.request.body),
@@ -95,7 +105,12 @@ class GitHubHelperTests(TestCase):
         report = {
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
-            "file_set": [{"key": "foo/bar", "ems": "Xpress"}],
+            "file_set": [
+                {
+                    "key": "X01000000/0000-00-00T00:00:00.00000/filename.csv",
+                    "ems": "Xpress",
+                }
+            ],
         }
 
         issue_link = raise_github_issue(key, repo, report)
@@ -111,5 +126,8 @@ class GitHubHelperTests(TestCase):
             f"token {key}", update_issue_call.request.headers["Authorization"]
         )
         self.assertDictEqual(
-            {"body": "Updated\nEMS: Xpress"}, json.loads(update_issue_call.request.body)
+            {
+                "body": "Updated\nEMS: Xpress\nFiles:\n- `X01000000/0000-00-00T00:00:00.00000/filename.csv`"
+            },
+            json.loads(update_issue_call.request.body),
         )
