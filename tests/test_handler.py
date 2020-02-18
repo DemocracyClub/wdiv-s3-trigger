@@ -308,7 +308,7 @@ class HandlerTests(TestCase):
             ses_backend.sent_messages[0].subject,
         )
 
-    def test_valid_excel_imietype(self):
+    def test_valid_excel_mimetype(self):
         self.load_fixture("ems-idox-eros.csv", mimetype="application/vnd.ms-excel")
 
         main(trigger_payload, None)

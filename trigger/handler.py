@@ -28,14 +28,6 @@ def register_env():
     }
 
 
-def fix_mime_type(key, obj):
-    if obj["ContentType"] not in ("text/csv", "text/tab-separated-values"):
-        if key.lower().endswith(".csv"):
-            obj["ContentType"] = "text/csv"
-        if key.lower().endswith(".tsv"):
-            obj["ContentType"] = "text/tab-separated-values"
-
-
 def get_file_report(s3, bucket, key):
     report = {
         "csv_valid": False,
@@ -46,11 +38,10 @@ def get_file_report(s3, bucket, key):
     }
 
     obj = s3.get_object(Bucket=bucket, Key=key)
-    fix_mime_type(key, obj)
     report = {**report, **get_object_report(obj)}
 
     if not report["errors"]:
-        report = {**report, **get_csv_report(obj)}
+        report = {**report, **get_csv_report(obj, key)}
 
     return report
 

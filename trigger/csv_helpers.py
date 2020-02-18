@@ -25,21 +25,20 @@ def attempt_decode(body):
     raise last_exception
 
 
-def get_delimiter(sample, content_type):
+def get_delimiter(sample, key):
     # sometimes we get CSVs with a TSV extension or TSVs with a CSV extension,
     # so we'll try and use csv.Sniffer to work it out for us.
     try:
         dialect = csv.Sniffer().sniff(sample, [",", "\t"])
         return dialect.delimiter
     except csv.Error:
-        # if that fails, make an assumption based on the MIME type
-        # (which S3 guesses from the extension)
-        if content_type == "text/tab-separated-values":
+        # if that fails, make an assumption based on the file extension
+        if key.lower().endswith(".tsv"):
             return "\t"
         return ","
 
 
-def get_csv_report(response):
+def get_csv_report(response, key):
     report = {"csv_valid": False, "csv_rows": 0, "ems": "unknown", "errors": []}
 
     body = response["Body"].read()
@@ -53,7 +52,7 @@ def get_csv_report(response):
         report["errors"].append("Failed to decode body using any expected encoding")
         return report
 
-    delimiter = get_delimiter(decoded[0:10000], response["ContentType"])
+    delimiter = get_delimiter(decoded[0:10000], key)
 
     try:
         records = csv.reader(
@@ -92,6 +91,4 @@ def get_object_report(response):
         return {"errors": ["Expected file to be at least 1KB"]}
     if response["ContentLength"] > 150_000_000:
         return {"errors": ["Expected file to be under 150MB"]}
-    if response["ContentType"] not in ("text/tab-separated-values", "text/csv"):
-        return {"errors": [f"Unexpected file type {response['ContentType']}"]}
     return {"errors": []}
