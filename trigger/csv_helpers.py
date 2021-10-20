@@ -18,7 +18,7 @@ def attempt_decode(body):
     encodings = ["utf-8", "windows-1252", "latin-1"]
     for encoding in encodings:
         try:
-            return body.decode(encoding)
+            return body.decode(encoding), encoding
         except UnicodeDecodeError as e:
             last_exception = e
             continue
@@ -37,17 +37,22 @@ def get_delimiter(sample, key):
             return "\t"
         return ","
 
-
-def get_csv_report(response, key):
-    report = {"csv_valid": False, "csv_rows": 0, "ems": "unknown", "errors": []}
-
+def get_csv_report(response):
+    report = {
+        "csv_valid": False,
+        "csv_rows": 0,
+        "csv_encoding": "",
+        "ems": "unknown",
+        "errors": [],
+    }
     body = response["Body"].read()
     if len(body) == 0:
         report["errors"].append("File is empty")
         return report
 
     try:
-        decoded = attempt_decode(body)
+        decoded, csv_encoding = attempt_decode(body)
+        report["csv_encoding"] = csv_encoding
     except UnicodeDecodeError:
         report["errors"].append("Failed to decode body using any expected encoding")
         return report

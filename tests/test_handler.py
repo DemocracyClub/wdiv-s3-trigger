@@ -180,6 +180,7 @@ class HandlerTests(TestCase):
                     "key": "X01000000/2019-09-30T17:00:02.396833/data.csv",
                     "csv_valid": True,
                     "csv_rows": 10,
+                    "csv_encoding": "utf-8",
                     "ems": "Idox Eros (Halarose)",
                     "errors": "",
                 }
@@ -218,6 +219,7 @@ class HandlerTests(TestCase):
                     "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-districts.csv",
                     "csv_valid": True,
                     "csv_rows": 20,
+                    "csv_encoding": "utf-8",
                     "ems": "Democracy Counts",
                     "errors": "",
                 },
@@ -225,6 +227,7 @@ class HandlerTests(TestCase):
                     "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-stations.csv",
                     "csv_valid": True,
                     "csv_rows": 20,
+                    "csv_encoding": "utf-8",
                     "ems": "Democracy Counts",
                     "errors": "",
                 },
@@ -258,6 +261,7 @@ class HandlerTests(TestCase):
                     "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-stations.csv",
                     "csv_valid": False,
                     "csv_rows": 20,
+                    "csv_encoding": "utf-8",
                     "ems": "Democracy Counts",
                     "errors": "Expected 2 files, found 1",
                 }
@@ -291,6 +295,7 @@ class HandlerTests(TestCase):
                     "key": "X01000000/2019-09-30T17:00:02.396833/data.csv",
                     "csv_valid": False,
                     "csv_rows": 10,
+                    "csv_encoding": "utf-8",
                     "ems": "Xpress DC",
                     "errors": "Incomplete file: Expected 38 columns on row 10 found 7",
                 }
@@ -332,6 +337,7 @@ class HandlerTests(TestCase):
                     "key": "X01000000/2019-09-30T17:00:02.396833/data.csv",
                     "csv_valid": True,
                     "csv_rows": 10,
+                    "csv_encoding": "utf-8",
                     "ems": "Idox Eros (Halarose)",
                     "errors": "",
                 }

@@ -25,6 +25,7 @@ class CsvHelperTests(TestCase):
         )
         self.assertTrue(report["csv_valid"])
         self.assertEqual(10, report["csv_rows"])
+        self.assertEqual("utf-8", report["csv_encoding"])
         self.assertEqual("Xpress DC", report["ems"])
 
     def test_valid_weblookup(self):
@@ -34,6 +35,7 @@ class CsvHelperTests(TestCase):
         )
         self.assertTrue(report["csv_valid"])
         self.assertEqual(10, report["csv_rows"])
+        self.assertEqual("utf-8", report["csv_encoding"])
         self.assertEqual("Xpress WebLookup", report["ems"])
 
     def test_dcounts_stations(self):
@@ -43,6 +45,7 @@ class CsvHelperTests(TestCase):
         )
         self.assertTrue(report["csv_valid"])
         self.assertEqual(20, report["csv_rows"])
+        self.assertEqual("utf-8", report["csv_encoding"])
         self.assertEqual("Democracy Counts", report["ems"])
 
     def test_dcounts_districts(self):
@@ -52,6 +55,7 @@ class CsvHelperTests(TestCase):
         )
         self.assertTrue(report["csv_valid"])
         self.assertEqual(20, report["csv_rows"])
+        self.assertEqual("utf-8", report["csv_encoding"])
         self.assertEqual("Democracy Counts", report["ems"])
 
     def test_valid_other(self):
@@ -69,6 +73,7 @@ class CsvHelperTests(TestCase):
         )
         self.assertTrue(report["csv_valid"])
         self.assertEqual(10, report["csv_rows"])
+        self.assertEqual("windows-1252", report["csv_encoding"])
         self.assertEqual("Xpress DC", report["ems"])
 
     def test_edgecase_csv_with_tsv_ext(self):
