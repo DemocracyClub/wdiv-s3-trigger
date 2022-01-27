@@ -32,6 +32,7 @@ def get_file_report(s3, bucket, key):
     report = {
         "csv_valid": False,
         "csv_rows": 0,
+        "csv_encoding": "",
         "ems": "unknown",
         "errors": [],
         "key": key,
@@ -53,7 +54,8 @@ def get_report(s3, bucket, key):
     report = {
         "gss": path.parts[0],
         "council_name": gss_to_council(path.parts[0]),
-        "timestamp": path.parts[1],
+        "timestamp": path.parts[2],
+        "election_date": path.parts[1],
         "github_issue": "",
         "file_set": [],
     }
