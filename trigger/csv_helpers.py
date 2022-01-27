@@ -37,7 +37,8 @@ def get_delimiter(sample, key):
             return "\t"
         return ","
 
-def get_csv_report(response):
+
+def get_csv_report(response, key):
     report = {
         "csv_valid": False,
         "csv_rows": 0,
