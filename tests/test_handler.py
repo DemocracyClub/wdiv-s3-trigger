@@ -42,7 +42,7 @@ trigger_payload = json.loads(
           "arn": "arn:aws:s3:::fake-upload-bucket"
         },
         "object": {
-          "key": "X01000000/2019-09-30T17%3A00%3A02.396833/data.csv",
+          "key": "X01000000/2019-12-12/2019-09-30T17%3A00%3A02.396833/data.csv",
           "size": 1024,
           "eTag": "0123456789abcdef0123456789abcdef",
           "sequencer": "0A1B2C3D4E5F678901"
@@ -151,7 +151,7 @@ class HandlerTests(TestCase):
         fixture = open(f"tests/fixtures/{filename}", "rb").read()
         self.conn.put_object(
             Bucket=self.upload_bucket,
-            Key=f"X01000000/2019-09-30T17:00:02.396833/{key}",
+            Key=f"X01000000/2019-12-12/2019-09-30T17:00:02.396833/{key}",
             Body=fixture,
             ContentType=mimetype,
         )
@@ -175,9 +175,10 @@ class HandlerTests(TestCase):
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
+            "election_date": "2019-12-12",
             "file_set": [
                 {
-                    "key": "X01000000/2019-09-30T17:00:02.396833/data.csv",
+                    "key": "X01000000/2019-12-12/2019-09-30T17:00:02.396833/data.csv",
                     "csv_valid": True,
                     "csv_rows": 10,
                     "csv_encoding": "utf-8",
@@ -189,7 +190,7 @@ class HandlerTests(TestCase):
         self.assertDictEqual(expected_dict, json.loads(responses.calls[3].request.body))
         resp = self.conn.get_object(
             Bucket=self.final_bucket,
-            Key="X01000000/2019-09-30T17:00:02.396833/report.json",
+            Key="X01000000/2019-12-12/2019-09-30T17:00:02.396833/report.json",
         )
         self.assertEqual(expected_dict, json.loads(resp["Body"].read()))
         self.assertEqual(0, len(ses_backend.sent_messages))
@@ -214,9 +215,10 @@ class HandlerTests(TestCase):
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
+            "election_date": "2019-12-12",
             "file_set": [
                 {
-                    "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-districts.csv",
+                    "key": "X01000000/2019-12-12/2019-09-30T17:00:02.396833/ems-dcounts-districts.csv",
                     "csv_valid": True,
                     "csv_rows": 20,
                     "csv_encoding": "utf-8",
@@ -224,7 +226,7 @@ class HandlerTests(TestCase):
                     "errors": "",
                 },
                 {
-                    "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-stations.csv",
+                    "key": "X01000000/2019-12-12/2019-09-30T17:00:02.396833/ems-dcounts-stations.csv",
                     "csv_valid": True,
                     "csv_rows": 20,
                     "csv_encoding": "utf-8",
@@ -236,7 +238,7 @@ class HandlerTests(TestCase):
         self.assertDictEqual(expected_dict, json.loads(responses.calls[3].request.body))
         resp = self.conn.get_object(
             Bucket=self.final_bucket,
-            Key="X01000000/2019-09-30T17:00:02.396833/report.json",
+            Key="X01000000/2019-12-12/2019-09-30T17:00:02.396833/report.json",
         )
         self.assertEqual(expected_dict, json.loads(resp["Body"].read()))
         self.assertEqual(0, len(ses_backend.sent_messages))
@@ -255,10 +257,11 @@ class HandlerTests(TestCase):
             "github_issue": "",
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
+            "election_date": "2019-12-12",
             "timestamp": "2019-09-30T17:00:02.396833",
             "file_set": [
                 {
-                    "key": "X01000000/2019-09-30T17:00:02.396833/ems-dcounts-stations.csv",
+                    "key": "X01000000/2019-12-12/2019-09-30T17:00:02.396833/ems-dcounts-stations.csv",
                     "csv_valid": False,
                     "csv_rows": 20,
                     "csv_encoding": "utf-8",
@@ -290,9 +293,10 @@ class HandlerTests(TestCase):
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
             "timestamp": "2019-09-30T17:00:02.396833",
+            "election_date": "2019-12-12",
             "file_set": [
                 {
-                    "key": "X01000000/2019-09-30T17:00:02.396833/data.csv",
+                    "key": "X01000000/2019-12-12/2019-09-30T17:00:02.396833/data.csv",
                     "csv_valid": False,
                     "csv_rows": 10,
                     "csv_encoding": "utf-8",
@@ -305,7 +309,7 @@ class HandlerTests(TestCase):
         with self.assertRaises(ClientError):
             self.conn.get_object(
                 Bucket=self.final_bucket,
-                Key="X01000000/2019-09-30T17:00:02.396833/report.json",
+                Key="X01000000/2019-12-12/2019-09-30T17:00:02.396833/report.json",
             )
         self.assertEqual(1, len(ses_backend.sent_messages))
         self.assertEqual(
@@ -331,10 +335,11 @@ class HandlerTests(TestCase):
             "github_issue": f"https://github.com/{self.repo}/issues/1",
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
+            'election_date': '2019-12-12',
             "timestamp": "2019-09-30T17:00:02.396833",
             "file_set": [
                 {
-                    "key": "X01000000/2019-09-30T17:00:02.396833/data.csv",
+                    "key": "X01000000/2019-12-12/2019-09-30T17:00:02.396833/data.csv",
                     "csv_valid": True,
                     "csv_rows": 10,
                     "csv_encoding": "utf-8",
@@ -346,7 +351,7 @@ class HandlerTests(TestCase):
         self.assertDictEqual(expected_dict, json.loads(responses.calls[3].request.body))
         resp = self.conn.get_object(
             Bucket=self.final_bucket,
-            Key="X01000000/2019-09-30T17:00:02.396833/report.json",
+            Key="X01000000/2019-12-12/2019-09-30T17:00:02.396833/report.json",
         )
         self.assertEqual(expected_dict, json.loads(resp["Body"].read()))
         self.assertEqual(0, len(ses_backend.sent_messages))
