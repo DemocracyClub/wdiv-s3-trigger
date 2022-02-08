@@ -24,6 +24,7 @@ class GitHubHelperTests(TestCase):
             report = {
                 "gss": "X01000000",
                 "council_name": "Piddleton Parish Council",
+                "election_date": "2019-12-12",
                 "file_set": [
                     {
                         "key": "X01000000/0000-00-00T00:00:00.00000/filename.csv",
@@ -57,6 +58,7 @@ class GitHubHelperTests(TestCase):
         report = {
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
+            "election_date": "2019-12-12",
             "file_set": [
                 {
                     "key": "X01000000/0000-00-00T00:00:00.00000/filename.csv",
@@ -76,7 +78,7 @@ class GitHubHelperTests(TestCase):
         )
         self.assertDictEqual(
             {
-                "title": "Import X01000000-Piddleton Parish Council",
+                "title": "Import X01000000-Piddleton Parish Council for 2019-12-12",
                 "body": "EMS: Xpress\nFiles:\n- `X01000000/0000-00-00T00:00:00.00000/filename.csv`",
                 "labels": ["Data Import", "ready"],
             },
@@ -92,7 +94,10 @@ class GitHubHelperTests(TestCase):
             json=[
                 {"title": "Import X01000001-Some Other Council", "number": 1232},
                 {"title": "Import X01000002-Some Other Council", "number": 1233},
-                {"title": "Import X01000000-Piddleton Parish Council", "number": 1234},
+                {
+                    "title": "Import X01000000-Piddleton Parish Council for 2019-12-12",
+                    "number": 1234,
+                },
             ],
             status=200,
         )
@@ -105,6 +110,7 @@ class GitHubHelperTests(TestCase):
         report = {
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
+            "election_date": "2019-12-12",
             "file_set": [
                 {
                     "key": "X01000000/0000-00-00T00:00:00.00000/filename.csv",
