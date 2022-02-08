@@ -335,7 +335,7 @@ class HandlerTests(TestCase):
             "github_issue": f"https://github.com/{self.repo}/issues/1",
             "gss": "X01000000",
             "council_name": "Piddleton Parish Council",
-            'election_date': '2019-12-12',
+            "election_date": "2019-12-12",
             "timestamp": "2019-09-30T17:00:02.396833",
             "file_set": [
                 {
