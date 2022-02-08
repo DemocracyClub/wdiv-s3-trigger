@@ -83,7 +83,9 @@ class GitHubIssue:
 
 
 def raise_github_issue(api_key, repo, report):
-    title = f"Import {report['gss']}-{report['council_name']}"
+    title = (
+        f"Import {report['gss']}-{report['council_name']} for {report['election_date']}"
+    )
     try:
         body = f"EMS: {report['file_set'][0]['ems']}\nFiles:"
         for f in report["file_set"]:
