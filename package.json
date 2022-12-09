@@ -7,7 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy:dev": "sls deploy --stage dev",
-    "deploy:prod": "sls deploy --stage prod"
+    "logs:dev": "sls logs --stage dev -f lambda_handler",
+    "deploy:prod": "sls deploy --stage prod",
+    "logs:prod": "sls logs --stage prod -f lambda_handler"
   },
   "author": "chris48s",
   "devDependencies": {
